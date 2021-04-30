@@ -191,73 +191,40 @@ void Game::UpdateGame() {
 	// Update tick counts (for next frame)
 	this->ticksCount = SDL_GetTicks();
 
-    //SDL_Log("newDirection: %d %d", this->newDirection.first, this->newDirection.second);
-    //SDL_Log("currentDirection: %d %d", this->currentDirection.first, this->currentDirection.second);
-
     if(this->newDirection == UP) {
-        SDL_Log("Current head position: %d %d", this->snake[0].x, this->snake[0].y);
+        
         for(int i = this->snake.size(); i > 0; i--)
             this->snake[i] = this->snake[i - 1];
-        // this->snake[2] = this->snake[1];
-        // this->snake[1] = this->snake[0];
+            
         this->snake[0].y = this->snake[0].y - GRID_SIZE;
-        SDL_Log("New head position: %d %d", this->snake[0].x, this->snake[0].y);
 
-        // for(int i = 1; i < this->snake.size() - 1; i++) {
-        //     this->snake[i] = this->snake[i + 1];
-        // }
-
-        //this->snake.pop_back();
-
-        //isRunning = false;
     }
 
     if(this->newDirection == LEFT) {
-        SDL_Log("Current head position: %d %d", this->snake[0].x, this->snake[0].y);
+        
         for(int i = this->snake.size(); i > 0; i--)
             this->snake[i] = this->snake[i - 1];
+
         this->snake[0].x = this->snake[0].x - GRID_SIZE;
-        SDL_Log("New head position: %d %d", this->snake[0].x, this->snake[0].y);
-
-        // for(int i = 1; i < this->snake.size() - 1; i++) {
-        //     this->snake[i] = this->snake[i + 1];
-        // }
-
-        //this->snake.pop_back();
-
-        //isRunning = false;
+        
     }
 
     if(this->newDirection == RIGHT) {
-        SDL_Log("Current head position: %d %d", this->snake[0].x, this->snake[0].y);
+        
         for(int i = this->snake.size(); i > 0; i--)
             this->snake[i] = this->snake[i - 1];
+
         this->snake[0].x = this->snake[0].x + GRID_SIZE;
-        SDL_Log("New head position: %d %d", this->snake[0].x, this->snake[0].y);
-
-        // for(int i = 1; i < this->snake.size() - 1; i++) {
-        //     this->snake[i] = this->snake[i + 1];
-        // }
-
-        //this->snake.pop_back();
-
-        //isRunning = false;
+    
     }
 
     if(this->newDirection == DOWN) {
-        SDL_Log("Current head position: %d %d", this->snake[0].x, this->snake[0].y);
+        
         for(int i = this->snake.size(); i > 0; i--)
             this->snake[i] = this->snake[i - 1];
+
         this->snake[0].y = this->snake[0].y + GRID_SIZE;
-        SDL_Log("New head position: %d %d", this->snake[0].x, this->snake[0].y);
 
-        // for(int i = 1; i < this->snake.size() - 1; i++) {
-        //     this->snake[i] = this->snake[i + 1];
-        // }
-
-        //this->snake.pop_back();
-
-        //isRunning = false;
     }
 
     if(this->snake[0].x == this->food.x && this->snake[0].y == this->food.y) {
@@ -265,39 +232,13 @@ void Game::UpdateGame() {
         this->food = randomCorner();
 
     }
-        SDL_Log("\n\n\n*************************\n\n\n");
 
-	// updatePaddlePosition(this->paddleDirection1, deltaTime, this->paddlePosition1);
-	// updatePaddlePosition(this->paddleDirection2, deltaTime, this->paddlePosition2);
-	
-	// // Update ball position based on ball velocity
+    if(this->snake[0].x <= WALL_THICKNESS || this->snake[0].x >= WINDOW_WIDTH - WALL_THICKNESS)
+        this->isRunning = false;
 
-	// for(int i = 0; i < this->currentBalls; i++) {
-	// 	auto& ballPosition = this->ballPositions[i];
-	// 	auto ballVelocity = this->ballVelocities[i];
+    if(this->snake[0].y <= WALL_THICKNESS || this->snake[0].y >= WINDOW_HEIGHT - WALL_THICKNESS)
+        this->isRunning = false;
 
-	// 	ballPosition.x += ballVelocity.x * deltaTime;
-	// 	ballPosition.y += ballVelocity.y * deltaTime;
-
-    //     if(ballPosition.x <= 0) {
-    //         this->currentBalls--;
-    //         this->ballPositions.erase(this->ballPositions.begin() + i);
-    //         this->ballVelocities.erase(this->ballVelocities.begin() + i);
-    //     }
-
-    //     if(ballPosition.x >= WINDOW_WIDTH) {
-    //         this->currentBalls--;
-    //         this->ballPositions.erase(this->ballPositions.begin() + i);
-    //         this->ballVelocities.erase(this->ballVelocities.begin() + i);
-    //     }
-
-	// }
-
-	// // How does the ball bounce with the walls, paddles and other balls
-
-    // if(this->currentBalls == 0)
-    //     isRunning = false;
-	
 }
 
 /*
@@ -319,6 +260,87 @@ void renderWall(SDL_Renderer* renderer, int x, int y, int w, int h) {
 
     
     SDL_RenderFillRect(renderer, &wall);
+
+}
+
+
+/*
+ *
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *
+ *
+*/
+void renderSnake(SDL_Renderer* renderer, std::vector<Corner> snake, int r, int g, int b, int a) {
+
+    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+    
+    for(Corner snakeCorner : snake) {
+
+        SDL_Rect snakeGrid;
+
+        snakeGrid.x = snakeCorner.x;            // Top left x
+        snakeGrid.y = snakeCorner.y;            // Top left y
+        snakeGrid.w = GRID_SIZE;                // Width
+        snakeGrid.h = GRID_SIZE;                // Height
+
+        SDL_RenderFillRect(renderer, &snakeGrid);
+
+    }
+}
+
+	
+/*
+ *
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *
+ *
+*/
+void renderGrid(SDL_Renderer* renderer) {
+
+	int actualWidth = WINDOW_WIDTH - 2 * WALL_THICKNESS;
+    int actualHeight = WINDOW_HEIGHT - 2 * WALL_THICKNESS;
+
+    for(int i = 1; i <= actualWidth / GRID_SIZE; i++) {
+
+        SDL_RenderDrawLine(renderer, 
+            0, 
+            WALL_THICKNESS + (GRID_SIZE * i), 
+            WINDOW_WIDTH - WALL_THICKNESS, 
+            WALL_THICKNESS + (GRID_SIZE * i));
+
+        SDL_RenderDrawLine(renderer, 
+            WALL_THICKNESS + (GRID_SIZE * i), 
+            0, 
+            WALL_THICKNESS + (GRID_SIZE * i), 
+            WINDOW_HEIGHT - WALL_THICKNESS);
+
+    }
+
+}
+
+/*
+ *
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+ *
+ *
+*/
+void renderFood(SDL_Renderer* renderer, Corner food, int r, int g, int b, int a) {
+
+	SDL_SetRenderDrawColor(renderer, r, g, b, a);
+    SDL_Rect foodGrid;
+
+    foodGrid.x = food.x;              // Top left x
+    foodGrid.y = food.y;              // Top left y
+    foodGrid.w = GRID_SIZE;           // Width
+    foodGrid.h = GRID_SIZE;           // Height
+
+    SDL_RenderFillRect(renderer, &foodGrid);
 
 }
 
@@ -353,51 +375,11 @@ void Game::GenerateOutput() {
     renderWall(this->renderer, 0, 0, WALL_THICKNESS, WINDOW_HEIGHT);
     renderWall(this->renderer, WINDOW_WIDTH - WALL_THICKNESS, 0, WALL_THICKNESS, WINDOW_HEIGHT);
 
-    int actualWidth = WINDOW_WIDTH - 2 * WALL_THICKNESS;
-    int actualHeight = WINDOW_HEIGHT - 2 * WALL_THICKNESS;
+    renderGrid(this->renderer);
 
-    for(int i = 1; i <= actualWidth / GRID_SIZE; i++) {
+    renderSnake(this->renderer, this->snake, 0, 255, 0, 255);
 
-        SDL_RenderDrawLine(this->renderer, 
-            0, 
-            WALL_THICKNESS + (GRID_SIZE * i), 
-            WINDOW_WIDTH - WALL_THICKNESS, 
-            WALL_THICKNESS + (GRID_SIZE * i));
-
-        SDL_RenderDrawLine(this->renderer, 
-            WALL_THICKNESS + (GRID_SIZE * i), 
-            0, 
-            WALL_THICKNESS + (GRID_SIZE * i), 
-            WINDOW_HEIGHT - WALL_THICKNESS);
-
-    }
-
-    SDL_SetRenderDrawColor(this->renderer, 0, 255, 0, 255);
-    
-    for(Corner snakeCorner : snake) {
-
-        SDL_Rect snakeGrid;
-
-        snakeGrid.x = snakeCorner.x;            // Top left x
-        snakeGrid.y = snakeCorner.y;            // Top left y
-        snakeGrid.w = GRID_SIZE;                // Width
-        snakeGrid.h = GRID_SIZE;                // Height
-
-        SDL_RenderFillRect(this->renderer, &snakeGrid);
-
-    }
-
-    SDL_SetRenderDrawColor(this->renderer, 255, 0, 0, 255);
-    SDL_Rect foodGrid;
-
-    foodGrid.x = this->food.x;              // Top left x
-    foodGrid.y = this->food.y;              // Top left y
-    foodGrid.w = GRID_SIZE;                 // Width
-    foodGrid.h = GRID_SIZE;                 // Height
-
-    SDL_RenderFillRect(this->renderer, &foodGrid);
-
-
+    renderFood(this->renderer, this->food, 255, 0, 0, 255);
 
     // Swap the front buffer and back buffer
     SDL_RenderPresent(this->renderer);
